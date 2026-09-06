@@ -50,6 +50,13 @@ html, body {
 .btn-dark { background: var(--color-black); color: var(--color-yellow); }
 .btn-light { background: var(--color-white); color: var(--color-black); }
 
+.diagnosis-count {
+  margin: 12px 0 0;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0.75;
+}
+
 .footer {
   margin-top: auto;
   padding-top: 24px;

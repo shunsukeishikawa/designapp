@@ -11,6 +11,7 @@ const CONTENT = {
     subtitle: '〜あなたはどのJUMPERタイプ？〜',
     lead: '「あたり前を超えるアイデアをくれ」\nクライアントや上司に言われたら、\nあなたならどう飛び越えますか飛び越えますか？\nあなたの「あたり前」のJUMPタイプを診断してみましょう。',
     startButton: 'いますぐ診断へJUMP！',
+    counterLabel: 'これまでの診断数：{count}回',
   },
 
   questions: [

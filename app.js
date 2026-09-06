@@ -39,6 +39,24 @@
     fetch(url, { mode: 'cors' }).catch(() => {});
   }
 
+  async function showDiagnosisCount() {
+    if (!CONFIG.COUNTER_ENABLED) return;
+    const name = CONFIG.COUNTER_NAMES.diagnosisStart;
+    if (!name) return;
+    const el = document.getElementById('diagnosis-count');
+    try {
+      const url = `https://api.counterapi.dev/v2/${CONFIG.COUNTER_WORKSPACE}/${name}`;
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) return;
+      const json = await res.json();
+      const count = json.data.up_count;
+      el.textContent = CONTENT.top.counterLabel.replace('{count}', count);
+      el.hidden = false;
+    } catch (e) {
+      // 取得に失敗しても画面には出さない
+    }
+  }
+
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -172,6 +190,7 @@
   }
 
   fillStaticText();
+  showDiagnosisCount();
 
   els.startButton.addEventListener('click', () => {
     trackCount('diagnosisStart');
