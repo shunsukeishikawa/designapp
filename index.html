@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>あたり前JUMPER診断</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-frame">
+
+  <!-- TOP -->
+  <section id="screen-top" class="screen active">
+    <div class="top-hero">
+      <p class="eyebrow" data-bind="top.eyebrow"></p>
+      <h1 class="logo">Design<br>Jumper</h1>
+    </div>
+    <div class="top-body">
+      <h2 class="top-title" data-bind="top.title"></h2>
+      <p class="top-subtitle" data-bind="top.subtitle"></p>
+      <p class="top-lead" data-bind="top.lead"></p>
+      <button id="start-button" class="btn btn-dark btn-block" data-bind="top.startButton"></button>
+    </div>
+    <footer class="footer" data-bind="common.copyright"></footer>
+  </section>
+
+  <!-- QUESTION (Q1-Q4を共通描画) -->
+  <section id="screen-question" class="screen">
+    <div class="progress" id="progress-dots"></div>
+    <h2 class="question-number" id="question-number"></h2>
+    <p class="question-text" id="question-text"></p>
+    <div class="choices" id="question-choices"></div>
+    <button id="back-button" class="link-back">← もどる</button>
+  </section>
+
+  <!-- RESULT -->
+  <section id="screen-result" class="screen">
+    <header class="result-header">
+      <p class="result-eyebrow">あたり前JUMPER診断 結果</p>
+      <h1 class="result-type" id="result-type"></h1>
+      <p class="result-tagline" id="result-tagline"></p>
+      <h2 class="result-name" id="result-name"></h2>
+      <div class="result-badge" id="result-badge"></div>
+      <ul class="result-points" id="result-points"></ul>
+    </header>
+
+    <div class="result-others">
+      <p class="result-others-label" id="result-others-label"></p>
+      <div class="result-others-buttons" id="result-others-buttons"></div>
+    </div>
+
+    <section class="about-block">
+      <h3 class="about-title" id="about-title"></h3>
+      <p class="about-body" id="about-body"></p>
+    </section>
+
+    <p class="disclaimer" id="disclaimer"></p>
+
+    <a id="note-link" class="btn btn-light btn-block" href="#" target="_blank" rel="noopener"></a>
+    <footer class="footer" data-bind="common.copyright"></footer>
+  </section>
+
+</div>
+
+<!-- 他タイプ表示用モーダル -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-card">
+    <button id="modal-close" class="modal-close" aria-label="閉じる">✕</button>
+    <p class="result-eyebrow">あたり前JUMPER診断 結果</p>
+    <h1 class="result-type" id="modal-type"></h1>
+    <p class="result-tagline" id="modal-tagline"></p>
+    <h2 class="result-name" id="modal-name"></h2>
+    <div class="result-badge" id="modal-badge"></div>
+    <ul class="result-points" id="modal-points"></ul>
+  </div>
+</div>
+
+<script src="content.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
