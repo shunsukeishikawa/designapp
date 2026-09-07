@@ -36,7 +36,8 @@
     const name = CONFIG.COUNTER_NAMES[counterKey];
     if (!name) return;
     const url = `https://api.counterapi.dev/v2/${CONFIG.COUNTER_WORKSPACE}/${name}/up`;
-    fetch(url, { mode: 'cors' }).catch(() => {});
+    // /up はGETだがカウントを変化させる操作なのでブラウザキャッシュを必ず回避する
+    fetch(url, { mode: 'cors', cache: 'no-store' }).catch(() => {});
   }
 
   async function showDiagnosisCount() {
@@ -46,7 +47,7 @@
     const el = document.getElementById('diagnosis-count');
     try {
       const url = `https://api.counterapi.dev/v2/${CONFIG.COUNTER_WORKSPACE}/${name}`;
-      const res = await fetch(url, { mode: 'cors' });
+      const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
       if (!res.ok) return;
       const json = await res.json();
       const count = json.data.up_count;
