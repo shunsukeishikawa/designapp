@@ -31,13 +31,20 @@
     modalPoints: document.getElementById('modal-points'),
   };
 
+  // CounterAPIのレスポンスはCDN(Cloudflare)でキャッシュされるため、
+  // 毎回異なるクエリを付けてキャッシュを必ず素通りさせる。
+  // (fetchのcache:'no-store'はブラウザキャッシュにしか効かない)
+  function counterUrl(name, action) {
+    const base = `https://api.counterapi.dev/v2/${CONFIG.COUNTER_WORKSPACE}/${name}`;
+    const path = action ? `${base}/${action}` : base;
+    return `${path}?t=${Date.now()}${Math.random().toString(36).slice(2)}`;
+  }
+
   function trackCount(counterKey) {
     if (!CONFIG.COUNTER_ENABLED) return;
     const name = CONFIG.COUNTER_NAMES[counterKey];
     if (!name) return;
-    const url = `https://api.counterapi.dev/v2/${CONFIG.COUNTER_WORKSPACE}/${name}/up`;
-    // /up はGETだがカウントを変化させる操作なのでブラウザキャッシュを必ず回避する
-    fetch(url, { mode: 'cors', cache: 'no-store' }).catch(() => {});
+    fetch(counterUrl(name, 'up'), { mode: 'cors', cache: 'no-store' }).catch(() => {});
   }
 
   async function showDiagnosisCount() {
@@ -46,8 +53,7 @@
     if (!name) return;
     const el = document.getElementById('diagnosis-count');
     try {
-      const url = `https://api.counterapi.dev/v2/${CONFIG.COUNTER_WORKSPACE}/${name}`;
-      const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+      const res = await fetch(counterUrl(name), { mode: 'cors', cache: 'no-store' });
       if (!res.ok) return;
       const json = await res.json();
       const count = json.data.up_count;
