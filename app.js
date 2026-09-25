@@ -105,12 +105,29 @@
     els.topBase.src = top.base;
     els.topBase.alt = top.alt;
     els.topHero.poster = top.heroPoster;
-    if (reducedMotion) {
-      els.topHero.removeAttribute('autoplay');
-      els.topHero.preload = 'none';
-    }
-    els.topHero.src = top.heroVideo;
     setButtonImage(els.startButton, top.startButton.image, top.startButton.label);
+    if (reducedMotion) {
+      els.topHero.removeAttribute('autoplay'); // 動きを減らす設定の人にはポスター画像のみ
+      return;
+    }
+    loadHeroVideo(top.heroVideo);
+  }
+
+  // iPhoneのSafariは、動画の部分取得(206)に対応していないサーバー
+  // (Cloudflare Pagesなど)の動画を再生できないことがある。
+  // 動画を丸ごと取得してブラウザ内のデータ(blob)として再生すれば、
+  // サーバーの対応状況に関係なく再生できる。読み込み中はポスター画像を表示。
+  async function loadHeroVideo(src) {
+    try {
+      const res = await fetch(src);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      els.topHero.src = URL.createObjectURL(blob);
+    } catch (e) {
+      // ローカルでindex.htmlを直接開いた場合などはfetchできないので通常の読み込みにする
+      els.topHero.src = src;
+    }
+    if (document.getElementById('screen-top').classList.contains('active')) playHero();
   }
 
   function renderQuestion(index) {
