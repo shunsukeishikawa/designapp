@@ -1,8 +1,13 @@
+/*
+ * 画面はすべて「デザイン幅390pxのSVG」＋「その上に重ねたボタン画像」で構成。
+ * --u はデザイン上の1pxを画面幅に合わせて拡縮した単位。
+ * ボタン位置は下の「ボタン位置」セクションで Figma の座標（390px基準）をそのまま指定する。
+ */
+
 :root {
-  --color-yellow: #F5C518;
-  --color-black: #111111;
-  --color-white: #ffffff;
-  --color-grey-bg: #e9e9e9;
+  --color-bg: #fccf00;
+  --color-overlay: #333333;
+  --frame-width-pc: 390px;
 }
 
 * { box-sizing: border-box; }
@@ -11,312 +16,147 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: var(--color-grey-bg);
-  font-family: "Hiragino Kaku Gothic ProN", "Meiryo", -apple-system, BlinkMacSystemFont, sans-serif;
-  color: var(--color-black);
+  background: var(--color-bg);
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", sans-serif;
+  color: #000;
+  -webkit-text-size-adjust: 100%;
 }
 
 .app-frame {
-  max-width: 430px;
-  margin: 0 auto;
-  min-height: 100vh;
-  position: relative;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
-}
-
-.screen {
-  display: none;
-  min-height: 100vh;
-  padding: 40px 24px 32px;
-  background: var(--color-yellow);
-  flex-direction: column;
-}
-
-.screen.active { display: flex; }
-
-.btn {
   display: block;
   width: 100%;
-  border: none;
-  border-radius: 2px;
-  padding: 16px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  text-align: center;
-  text-decoration: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--color-bg);
+  container-type: inline-size;
 }
 
-.btn-dark { background: var(--color-black); color: var(--color-yellow); }
-.btn-light { background: var(--color-white); color: var(--color-black); }
+/* PC：中央にスマホ幅の画面、左右はキャラクター柄の背景 */
+@media (min-width: 600px) {
+  body {
+    background: var(--color-bg) url("assets/pc-bg.jpg") center / cover no-repeat fixed;
+  }
+  .app-frame {
+    max-width: var(--frame-width-pc);
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.18);
+  }
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+.stage {
+  --u: calc(100cqw / 390);
+  position: relative;
+}
+
+.stage-base {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* 画像ボタン（--x, --y, --w, --h をデザイン座標で指定） */
+.hotspot {
+  --pad: 0;
+  position: absolute;
+  left: calc((var(--x) - var(--pad)) * var(--u));
+  top: calc((var(--y) - var(--pad)) * var(--u));
+  width: calc((var(--w) + var(--pad) * 2) * var(--u));
+  height: calc((var(--h) + var(--pad) * 2) * var(--u));
+  padding: calc(var(--pad) * var(--u));
+  margin: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* --r: 角丸の半径（ボタンSVGの書き出しで角丸が失われているものをCSSで補う） */
+.hotspot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--r, 0) * var(--u));
+  pointer-events: none;
+  transition: transform 0.12s ease;
+}
+
+.hotspot:active img { transform: scale(0.97); }
+
+.hotspot:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 2px;
+  border-radius: calc(var(--r, 4) * var(--u));
+}
+
+/* 当たり判定が小さいボタンは周囲に余白を足してタップしやすくする */
+.hotspot--pad { --pad: 12; }
+
+/* ===== ボタン位置（Figma座標, 390px基準） ===== */
+
+/* TOP */
+.top-hero {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: calc(693 * var(--u));
+  object-fit: cover;
+  pointer-events: none;
+  /* 動画と下地SVGの黄色は合成時にわずかに色がずれることがあるため、
+     キャラクターが描かれない最下部(688〜693px)だけ下地へぼかして境目を消す */
+  -webkit-mask-image: linear-gradient(to bottom, #000 99.2%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 99.2%, transparent 100%);
+}
+#start-button { --x: 16; --y: 978; --w: 358; --h: 70; --r: 35; }
 
 .diagnosis-count {
-  margin: 12px 0 0;
-  font-size: 12px;
-  text-align: center;
-  opacity: 0.75;
-}
-
-.footer {
-  margin-top: auto;
-  padding-top: 24px;
-  font-size: 10px;
-  opacity: 0.6;
-  text-align: center;
-}
-
-/* --- TOP --- */
-.top-hero { margin-bottom: 48px; }
-
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  margin: 0 0 4px;
-}
-
-.logo {
-  font-size: 64px;
-  line-height: 0.9;
-  font-weight: 900;
-  font-style: italic;
-  transform: skewX(-6deg);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(1054 * var(--u));
   margin: 0;
-}
-
-.top-body { flex: 1; }
-
-.top-title { font-size: 20px; font-weight: 800; margin: 0 0 4px; }
-.top-subtitle { font-size: 13px; margin: 0 0 16px; }
-.top-lead {
-  font-size: 13px;
-  line-height: 1.8;
-  white-space: pre-line;
-  margin: 0 0 32px;
-}
-
-/* --- QUESTION --- */
-.progress {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 32px;
-}
-
-.progress span {
-  flex: 1;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.progress span.filled { background: var(--color-black); }
-
-.question-number {
-  font-size: 56px;
-  font-weight: 900;
-  font-style: italic;
-  transform: skewX(-6deg);
-  margin: 0 0 16px;
-}
-
-.question-text {
-  font-size: 16px;
+  font-size: calc(11 * var(--u));
   font-weight: 700;
-  line-height: 1.6;
-  margin: 0 0 32px;
-  white-space: pre-line;
+  text-align: center;
 }
 
-.choices {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+/* 質問（選択肢は --i 番目ごとに134pxずつ下へ） */
+.choice { --x: 16; --y: calc(394 + var(--i) * 134); --w: 358; --h: 120; --r: 13; }
+#back-button { --x: 310; --y: 669; --w: 64; --h: 13; }
 
-.choice-btn {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: var(--color-black);
-  color: var(--color-white);
-  border: none;
-  border-radius: 4px;
-  padding: 18px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-  text-align: left;
-  cursor: pointer;
-}
+/* 診断結果（他タイプのカードは --i 番目ごとに214pxずつ下へ） */
+.type-card { --x: 16; --y: calc(1583 + var(--i) * 214); --w: 358; --h: 200; --r: 12; }
+#note-link { --x: 16; --y: 2807; --w: 358; --h: 70; --r: 35; }
 
-.choice-btn .choice-key {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--color-yellow);
-  color: var(--color-black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 13px;
-}
+/* モーダル */
+#modal-close { --x: 299; --y: 39; --w: 52; --h: 17; --pad: 14; }
 
-.link-back {
-  margin-top: 24px;
-  align-self: flex-end;
-  background: none;
-  border: none;
-  font-size: 12px;
-  color: #333;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-/* --- RESULT --- */
-#screen-result {
-  background: var(--color-black);
-  color: var(--color-white);
-}
-
-.result-header { text-align: center; }
-
-.result-eyebrow { font-size: 11px; opacity: 0.7; margin: 0 0 8px; }
-
-.result-type {
-  font-size: 56px;
-  font-weight: 900;
-  font-style: italic;
-  transform: skewX(-6deg);
-  margin: 0 0 8px;
-  color: var(--color-yellow);
-}
-
-.result-tagline { font-size: 13px; margin: 0 0 4px; }
-.result-name { font-size: 20px; font-weight: 800; margin: 0 0 24px; }
-
-.result-badge {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  margin: 0 auto 24px;
-  background: var(--badge-color, var(--color-yellow));
-}
-
-.result-points {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  text-align: left;
-}
-
-.result-points li {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  padding: 10px 12px;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.result-points li::before { content: "✔ "; color: var(--color-yellow); }
-
-.result-others { text-align: center; margin-bottom: 32px; }
-
-.result-others-label {
-  font-size: 12px;
-  white-space: pre-line;
-  margin: 0 0 12px;
-  opacity: 0.85;
-}
-
-.result-others-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.result-others-buttons button {
-  background: var(--color-black);
-  border: 1px solid var(--color-yellow);
-  color: var(--color-yellow);
-  padding: 12px;
-  font-weight: 800;
-  font-size: 14px;
-  font-style: italic;
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-.about-block {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  padding: 20px;
-  margin-bottom: 24px;
-}
-
-.about-title {
-  white-space: pre-line;
-  font-size: 18px;
-  font-weight: 800;
-  margin: 0 0 12px;
-}
-
-.about-body {
-  white-space: pre-line;
-  font-size: 12px;
-  line-height: 1.7;
-  opacity: 0.85;
-  margin: 0;
-}
-
-.disclaimer {
-  font-size: 10px;
-  opacity: 0.6;
-  line-height: 1.6;
-  margin: 0 0 16px;
-}
-
-/* --- MODAL --- */
+/* ===== モーダル ===== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
   z-index: 100;
-}
-
-.modal-overlay.active { display: flex; }
-
-.modal-card {
-  position: relative;
-  background: var(--color-white);
-  color: var(--color-black);
-  border-radius: 8px;
-  padding: 40px 24px 24px;
-  max-width: 340px;
-  width: 100%;
-  max-height: 85vh;
+  background: var(--color-overlay);
   overflow-y: auto;
-  text-align: center;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-.modal-card .result-type { color: var(--color-black); }
-.modal-card .result-points li { background: rgba(0, 0, 0, 0.05); }
-.modal-card .result-points li::before { color: #c99a00; }
+.modal-overlay[hidden] { display: none; }
 
-.modal-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: #333;
+.modal-sheet {
+  width: 100%;
+  margin: 0 auto;
+  container-type: inline-size;
+}
+
+@media (min-width: 600px) {
+  .modal-sheet { max-width: var(--frame-width-pc); }
 }

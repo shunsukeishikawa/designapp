@@ -1,133 +1,105 @@
 /*
  * 診断コンテンツ定義。
- * タイプ名称・質問文・配色・note記事URLは未確定のため、
- * ここを書き換えるだけで差し替えられるようにしている。
+ *
+ * 画面の見た目（文字・イラスト・ボタン）はすべて svgs/ と assets/ の画像です。
+ * デザインを差し替えるときは、同じファイル名で上書きするだけで反映されます。
+ * ボタンの位置を調整したいときは style.css の「ボタン位置」の数値
+ * （Figmaのデザイン幅390px基準の座標）を変更してください。
+ *
+ * このファイルの文言（label / text / alt）は画面には表示されず、
+ * 読み上げ（アクセシビリティ）用の代替テキストとして使われます。
  */
 
 const CONTENT = {
   top: {
-    eyebrow: 'SOMPO Design Studio Presents',
-    title: 'あたり前JUMPER診断',
-    subtitle: '〜あなたはどのJUMPERタイプ？〜',
-    lead: '「あたり前を超えるアイデアをくれ」\nクライアントや上司に言われたら、\nあなたならどう飛び越えますか飛び越えますか？\nあなたの「あたり前」のJUMPタイプを診断してみましょう。',
-    startButton: 'いますぐ診断へJUMP！',
+    base: 'svgs/app_top.svg',
+    alt: '「あたり前」Jumper診断 〜あなたはどのJumperタイプ？〜 「あたり前を越えるアイデアをくれ」クライアントや上司に言われたら、あなたならどう飛び越えますか？ 4つの質問で診断してみましょう！',
+    heroVideo: 'assets/top-hero.mp4',
+    heroPoster: 'assets/top-hero-poster.jpg',
+    startButton: { image: 'svgs/app_btn_top.svg', label: 'いますぐ診断へJump!' },
     counterLabel: 'これまでの診断数：{count}回',
   },
 
+  // axis: 'personal'（＋個人 / −集団） or 'emotion'（＋感情 / −論理）
+  // 配点は構成図（Figma）の「配点ロジック」に準拠。
   questions: [
     {
-      id: 'Q1',
-      title: 'Q1',
-      text: '「力になって！」と言われた瞬間は？',
-      axis: 'personal', // 'personal': 個人⇔集団, 'emotion': 感情⇔論理
-      choices: [
-        { key: 'A', label: 'ひとりで「モクモク・コソコソ...」', score: 2 },
-        { key: 'B', label: '誰かに言いたい！「ねえちょっと聞いて？」', score: -2 },
-      ],
-    },
-    {
-      id: 'Q2',
-      title: 'Q2',
-      text: '仕事中どっちの瞬間が多い？',
+      base: 'svgs/app_q1.svg',
+      text: 'Q1 「是非、力になって！」と言われた瞬間は？',
       axis: 'emotion',
       choices: [
-        { key: 'A', label: 'もちろんです！任せてください！', score: 1 },
-        { key: 'B', label: 'まずは目的から整理させてください', score: -1 },
+        { key: 'A', label: '「もちろんです！任せてください！」', image: 'svgs/app_btn_q1-a.svg', score: 1 },
+        { key: 'B', label: '「まずは目的から整理させてください」', image: 'svgs/app_btn_q1-b.svg', score: -1 },
       ],
     },
     {
-      id: 'Q3',
-      title: 'Q3',
-      text: '想定外のことが起きて予定がくるった！',
+      base: 'svgs/app_q2.svg',
+      text: 'Q2 どっちの瞬間が多い？',
       axis: 'personal',
       choices: [
-        { key: 'A', label: 'アイディアが実現した未来を妄想して「ムフフッ」', score: 1 },
-        { key: 'B', label: 'アイディアをブレストしてみんなで「いけそう！」', score: -1 },
+        { key: 'A', label: 'アイディアが実現した未来を妄想して「ムフフッ」', image: 'svgs/app_btn_q2-a.svg', score: 1 },
+        { key: 'B', label: 'アイディアをブレストしてみんなで「いけそう！」', image: 'svgs/app_btn_q2-b.svg', score: -1 },
       ],
     },
     {
-      id: 'Q4',
-      title: 'Q4',
-      text: '実際に行動に移す決め手は？',
+      base: 'svgs/app_q3.svg',
+      text: 'Q3 想定外のことが起きて予定がくるった！',
       axis: 'emotion',
       choices: [
-        { key: 'A', label: '使命感とバイブス', score: 2 },
-        { key: 'B', label: 'データによるガチ根拠', score: -2 },
+        { key: 'A', label: 'くるった箇所をしっかり直してから進める', image: 'svgs/app_btn_q3-a.svg', score: 1 },
+        { key: 'B', label: 'くるった箇所は一旦そのままにして進める', image: 'svgs/app_btn_q3-b.svg', score: -1 },
+      ],
+    },
+    {
+      base: 'svgs/app_q4.svg',
+      text: 'Q4 実際に行動に移す決め手は？',
+      axis: 'emotion',
+      choices: [
+        { key: 'A', label: '使命感とバイブス', image: 'svgs/app_btn_q4-a.svg', score: 1 },
+        { key: 'B', label: 'データによるガチ根拠', image: 'svgs/app_btn_q4-b.svg', score: -1 },
       ],
     },
   ],
 
+  backButton: { image: 'svgs/app_btn_back.svg', label: 'もどる' },
+
   // 軸1（personal合計の符号）× 軸2（emotion合計の符号）→ タイプ
-  // personal: +個人 / -集団, emotion: +感情 / -論理
   matrix: {
-    'personal_emotion': 'A',
-    'group_emotion': 'B',
-    'personal_logic': 'C',
-    'group_logic': 'D',
+    personal_emotion: 'A',
+    group_emotion: 'B',
+    personal_logic: 'C',
+    group_logic: 'D',
   },
 
   results: {
     A: {
-      title: 'TYPE-A',
-      tagline: 'ひとりで勢いよく。',
-      name: '怖いもの知らずJUMPER',
-      color: '#F2A93B',
-      points: [
-        '思い立ったら即行動、フットワークの軽さが武器',
-        '前例がないことにワクワクする',
-        '「まあ何とかなるっしょ」精神で突き進む',
-        '一人で抱え込みすぎることもあるので要注意',
-      ],
+      name: 'Type-A 怖いもの知らJumper',
+      page: 'svgs/app_A.svg',
+      modal: 'svgs/app_modal_A.svg',
+      card: 'svgs/app_btn_A.svg',
     },
     B: {
-      title: 'TYPE-B',
-      tagline: 'みんなで勢いよく。',
-      name: '御神輿どっこいJUMPER',
-      color: '#E8632C',
-      points: [
-        '「なんとかなるっしょ」の楽観力であたり前に挑む',
-        '決起会などのイベント事はアガる',
-        '巻き込んだ後で「あ、ごめん今思いついた！」',
-        '一人だと不安なので仲間がいると謎の万能感が出る',
-      ],
+      name: 'Type-B 祭りだわっしょいわっJumper',
+      page: 'svgs/app_B.svg',
+      modal: 'svgs/app_modal_B.svg',
+      card: 'svgs/app_btn_B.svg',
     },
     C: {
-      title: 'TYPE-C',
-      tagline: 'ひとりでじっくり。',
-      name: '先んずれば人を制すJUMPER',
-      color: '#2F5233',
-      points: [
-        'データと根拠を積み上げてから動き出す',
-        '一人で仮説検証を回すのが得意',
-        '納得感がないと動けないタイプ',
-        '気づけば誰よりも先に準備が終わっている',
-      ],
+      name: 'Type-C 先んずれば人を制Jumper',
+      page: 'svgs/app_C.svg',
+      modal: 'svgs/app_modal_C.svg',
+      card: 'svgs/app_btn_C.svg',
     },
     D: {
-      title: 'TYPE-D',
-      tagline: 'みんなでじっくり。',
-      name: 'シンクロナイズドJUMPER',
-      color: '#1F6F78',
-      points: [
-        'チームの合意形成を大事にする',
-        '議論を重ねてから着実に前進する',
-        '根回しと巻き込みが上手い',
-        'みんなが納得した瞬間の一体感が好き',
-      ],
+      name: 'Type-D シンクロナイJumper',
+      page: 'svgs/app_D.svg',
+      modal: 'svgs/app_modal_D.svg',
+      card: 'svgs/app_btn_D.svg',
     },
   },
 
-  noteArticleUrl: 'https://note.com/REPLACE_ME',
+  noteButton: { image: 'svgs/app_btn_note.svg', label: 'note記事へJump!' },
+  closeButton: { image: 'svgs/app_btn_close.svg', label: '閉じる' },
 
-  common: {
-    aboutTitle: 'We Are\nSOMPO Design Studio',
-    aboutBody:
-      '私たちSOMPO Design Studioは\n「SOMPOの『あたり前』の向こうへ。」を\nミッションに掲げています。\n\n' +
-      '歴史ある会社の枠組みをJUMPし、\n古い習慣を塗り替え、\n保険のイメージに囚われない、\n誰も見たことのない\n安心・安全・健康な暮らしを描くこと。',
-    otherTypesLabel: '診断は当てはまりましたか？\n他のJUMPERタイプはこちら',
-    noteButton: 'note記事へJUMP！',
-    copyright: 'Copyright © 2026 Sompo Digital Lab. All right reserved.',
-    disclaimer:
-      '※ 本診断はSOMPO Design Studioが制作・参考目的で作成したものです。結果の正確性、有用性は保証いたしかねます。',
-  },
+  noteArticleUrl: 'https://note.com/sompo_sprint/n/n93d0e97bf296',
 };
