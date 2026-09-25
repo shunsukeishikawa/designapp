@@ -2,34 +2,29 @@
   const state = {
     questionIndex: 0,
     answers: [], // answers[i] = { axis: 'personal'|'emotion', score: number }
+    modalOpener: null,
   };
 
+  const $ = (id) => document.getElementById(id);
   const els = {
-    startButton: document.getElementById('start-button'),
-    progressDots: document.getElementById('progress-dots'),
-    questionNumber: document.getElementById('question-number'),
-    questionText: document.getElementById('question-text'),
-    questionChoices: document.getElementById('question-choices'),
-    backButton: document.getElementById('back-button'),
-    resultType: document.getElementById('result-type'),
-    resultTagline: document.getElementById('result-tagline'),
-    resultName: document.getElementById('result-name'),
-    resultBadge: document.getElementById('result-badge'),
-    resultPoints: document.getElementById('result-points'),
-    resultOthersLabel: document.getElementById('result-others-label'),
-    resultOthersButtons: document.getElementById('result-others-buttons'),
-    aboutTitle: document.getElementById('about-title'),
-    aboutBody: document.getElementById('about-body'),
-    disclaimer: document.getElementById('disclaimer'),
-    noteLink: document.getElementById('note-link'),
-    modalOverlay: document.getElementById('modal-overlay'),
-    modalClose: document.getElementById('modal-close'),
-    modalType: document.getElementById('modal-type'),
-    modalTagline: document.getElementById('modal-tagline'),
-    modalName: document.getElementById('modal-name'),
-    modalBadge: document.getElementById('modal-badge'),
-    modalPoints: document.getElementById('modal-points'),
+    topBase: $('top-base'),
+    topHero: $('top-hero'),
+    startButton: $('start-button'),
+    diagnosisCount: $('diagnosis-count'),
+    questionBase: $('question-base'),
+    questionChoices: $('question-choices'),
+    backButton: $('back-button'),
+    resultBase: $('result-base'),
+    resultOthers: $('result-others'),
+    noteLink: $('note-link'),
+    modalOverlay: $('modal-overlay'),
+    modalBase: $('modal-base'),
+    modalClose: $('modal-close'),
   };
+
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- カウンター（CounterAPI） ---------- */
 
   // CounterAPIのレスポンスはCDN(Cloudflare)でキャッシュされるため、
   // 毎回異なるクエリを付けてキャッシュを必ず素通りさせる。
@@ -51,66 +46,98 @@
     if (!CONFIG.COUNTER_ENABLED) return;
     const name = CONFIG.COUNTER_NAMES.diagnosisStart;
     if (!name) return;
-    const el = document.getElementById('diagnosis-count');
     try {
       const res = await fetch(counterUrl(name), { mode: 'cors', cache: 'no-store' });
       if (!res.ok) return;
       const json = await res.json();
       const count = json.data.up_count;
-      el.textContent = CONTENT.top.counterLabel.replace('{count}', count);
-      el.hidden = false;
+      els.diagnosisCount.textContent = CONTENT.top.counterLabel.replace('{count}', count);
+      els.diagnosisCount.hidden = false;
     } catch (e) {
       // 取得に失敗しても画面には出さない
     }
   }
 
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo(0, 0);
+  /* ---------- 画像ユーティリティ ---------- */
+
+  const preloaded = new Map();
+  function preload(src) {
+    if (!src || preloaded.has(src)) return;
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+    preloaded.set(src, img);
   }
 
-  function fillStaticText() {
-    document.querySelectorAll('[data-bind]').forEach((el) => {
-      const path = el.getAttribute('data-bind').split('.');
-      let value = CONTENT;
-      for (const key of path) value = value ? value[key] : undefined;
-      if (value != null) el.textContent = value;
-    });
+  function imageButton(tag, className, image, label) {
+    const el = document.createElement(tag);
+    el.className = `hotspot ${className}`;
+    el.setAttribute('aria-label', label);
+    const img = document.createElement('img');
+    img.src = image;
+    img.alt = '';
+    el.appendChild(img);
+    return el;
+  }
+
+  function setButtonImage(el, image, label) {
+    el.querySelector('img').src = image;
+    el.setAttribute('aria-label', label);
+  }
+
+  /* ---------- 画面遷移 ---------- */
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
+    window.scrollTo(0, 0);
+    if (id === 'screen-top') playHero();
+    else els.topHero.pause();
+  }
+
+  function playHero() {
+    if (reducedMotion) return;
+    const p = els.topHero.play();
+    if (p && p.catch) p.catch(() => {}); // 低電力モード等で自動再生不可ならポスター画像のまま
+  }
+
+  function renderTop() {
+    const top = CONTENT.top;
+    els.topBase.src = top.base;
+    els.topBase.alt = top.alt;
+    els.topHero.poster = top.heroPoster;
+    if (reducedMotion) {
+      els.topHero.removeAttribute('autoplay');
+      els.topHero.preload = 'none';
+    }
+    els.topHero.src = top.heroVideo;
+    setButtonImage(els.startButton, top.startButton.image, top.startButton.label);
   }
 
   function renderQuestion(index) {
     const q = CONTENT.questions[index];
-
-    els.progressDots.innerHTML = '';
-    CONTENT.questions.forEach((_, i) => {
-      const dot = document.createElement('span');
-      if (i <= index) dot.classList.add('filled');
-      els.progressDots.appendChild(dot);
-    });
-
-    els.questionNumber.textContent = q.title;
-    els.questionText.textContent = q.text;
+    els.questionBase.src = q.base;
+    els.questionBase.alt = q.text;
 
     els.questionChoices.innerHTML = '';
-    q.choices.forEach((choice) => {
-      const btn = document.createElement('button');
-      btn.className = 'choice-btn';
-      btn.innerHTML = `<span class="choice-key">${choice.key}</span><span>${choice.label}</span>`;
+    q.choices.forEach((choice, i) => {
+      const btn = imageButton('button', 'choice', choice.image, `${choice.key}. ${choice.label}`);
+      btn.style.setProperty('--i', i);
       btn.addEventListener('click', () => onAnswer(index, q.axis, choice.score));
       els.questionChoices.appendChild(btn);
     });
 
+    if (index === CONTENT.questions.length - 1) preloadResultCandidates();
     showScreen('screen-question');
   }
 
   function onAnswer(index, axis, score) {
     state.answers[index] = { axis, score };
+    state.answers.length = index + 1;
     if (index + 1 < CONTENT.questions.length) {
       state.questionIndex = index + 1;
       renderQuestion(state.questionIndex);
     } else {
-      finishQuestions();
+      renderResult(judgeType(state.answers));
     }
   }
 
@@ -123,81 +150,107 @@
     renderQuestion(state.questionIndex);
   }
 
-  function finishQuestions() {
+  /* ---------- 判定 ---------- */
+
+  function judgeType(answers) {
     let personalTotal = 0;
     let emotionTotal = 0;
-    state.answers.forEach((answer) => {
+    answers.forEach((answer) => {
       if (answer.axis === 'personal') personalTotal += answer.score;
       if (answer.axis === 'emotion') emotionTotal += answer.score;
     });
-
     const axis1 = personalTotal > 0 ? 'personal' : 'group';
     const axis2 = emotionTotal > 0 ? 'emotion' : 'logic';
-    const typeKey = CONTENT.matrix[`${axis1}_${axis2}`];
+    return CONTENT.matrix[`${axis1}_${axis2}`];
+  }
 
-    renderResult(typeKey);
+  // 最後の質問を表示した時点で、ありうる結果画面だけ先読みしておく
+  function preloadResultCandidates() {
+    const last = CONTENT.questions[CONTENT.questions.length - 1];
+    last.choices.forEach((choice) => {
+      const answers = state.answers.slice(0, CONTENT.questions.length - 1)
+        .concat({ axis: last.axis, score: choice.score });
+      const type = judgeType(answers);
+      preload(CONTENT.results[type].page);
+    });
+    Object.values(CONTENT.results).forEach((r) => preload(r.card));
+  }
+
+  /* ---------- 結果 ---------- */
+
+  function renderResult(typeKey) {
+    const result = CONTENT.results[typeKey];
+    els.resultBase.src = result.page;
+    els.resultBase.alt = `「あたり前」Jumper診断 結果 ${result.name}`;
+
+    els.resultOthers.innerHTML = '';
+    Object.keys(CONTENT.results)
+      .filter((key) => key !== typeKey)
+      .forEach((key, i) => {
+        const other = CONTENT.results[key];
+        const btn = imageButton('button', 'type-card', other.card, `${other.name}の結果を見る`);
+        btn.style.setProperty('--i', i);
+        btn.addEventListener('click', () => openModal(key, btn));
+        els.resultOthers.appendChild(btn);
+        preload(other.modal);
+      });
+
+    setButtonImage(els.noteLink, CONTENT.noteButton.image, CONTENT.noteButton.label);
+    els.noteLink.href = CONTENT.noteArticleUrl;
+
     showScreen('screen-result');
   }
 
-  function fillResultInto(typeKey, refs) {
+  /* ---------- モーダル ---------- */
+
+  function openModal(typeKey, opener) {
     const result = CONTENT.results[typeKey];
-    refs.type.textContent = result.title;
-    refs.tagline.textContent = result.tagline;
-    refs.name.textContent = result.name;
-    refs.badge.style.setProperty('--badge-color', result.color);
-    refs.points.innerHTML = '';
-    result.points.forEach((point) => {
-      const li = document.createElement('li');
-      li.textContent = point;
-      refs.points.appendChild(li);
-    });
-  }
-
-  function renderResult(typeKey) {
-    fillResultInto(typeKey, {
-      type: els.resultType,
-      tagline: els.resultTagline,
-      name: els.resultName,
-      badge: els.resultBadge,
-      points: els.resultPoints,
-    });
-
-    els.resultOthersLabel.textContent = CONTENT.common.otherTypesLabel;
-    els.resultOthersButtons.innerHTML = '';
-    Object.keys(CONTENT.results)
-      .filter((key) => key !== typeKey)
-      .forEach((key) => {
-        const btn = document.createElement('button');
-        btn.textContent = CONTENT.results[key].title;
-        btn.addEventListener('click', () => openModal(key));
-        els.resultOthersButtons.appendChild(btn);
-      });
-
-    els.aboutTitle.textContent = CONTENT.common.aboutTitle;
-    els.aboutBody.textContent = CONTENT.common.aboutBody;
-    els.disclaimer.textContent = CONTENT.common.disclaimer;
-
-    els.noteLink.textContent = CONTENT.common.noteButton;
-    els.noteLink.href = CONTENT.noteArticleUrl;
-  }
-
-  function openModal(typeKey) {
-    fillResultInto(typeKey, {
-      type: els.modalType,
-      tagline: els.modalTagline,
-      name: els.modalName,
-      badge: els.modalBadge,
-      points: els.modalPoints,
-    });
-    els.modalOverlay.classList.add('active');
+    els.modalBase.src = result.modal;
+    els.modalBase.alt = `${result.name}の診断結果`;
+    els.modalOverlay.setAttribute('aria-label', result.name);
+    els.modalOverlay.hidden = false;
+    els.modalOverlay.scrollTop = 0;
+    document.documentElement.style.overflow = 'hidden';
+    state.modalOpener = opener;
+    els.modalClose.focus({ preventScroll: true });
   }
 
   function closeModal() {
-    els.modalOverlay.classList.remove('active');
+    if (els.modalOverlay.hidden) return;
+    els.modalOverlay.hidden = true;
+    document.documentElement.style.overflow = '';
+    if (state.modalOpener) state.modalOpener.focus({ preventScroll: true });
+    state.modalOpener = null;
   }
 
-  fillStaticText();
+  // カード外（半透明の背景部分）をタップしたら閉じる
+  // モーダル画像は左右上下24pxが透明な余白なので、その範囲も背景扱いにする
+  function onOverlayClick(e) {
+    if (e.target === els.modalClose || els.modalClose.contains(e.target)) return;
+    const rect = els.modalBase.getBoundingClientRect();
+    const u = rect.width / 390;
+    const x = (e.clientX - rect.left) / u;
+    const y = (e.clientY - rect.top) / u;
+    const card = { left: 24, right: 366, top: 24, bottom: rect.height / u - 24 };
+    if (x < card.left || x > card.right || y < card.top || y > card.bottom) closeModal();
+  }
+
+  /* ---------- 初期化 ---------- */
+
+  renderTop();
+  setButtonImage(els.backButton, CONTENT.backButton.image, CONTENT.backButton.label);
+  setButtonImage(els.modalClose, CONTENT.closeButton.image, CONTENT.closeButton.label);
   showDiagnosisCount();
+  playHero();
+
+  // 質問画面の画像はトップ表示後に先読み（遷移時のチラつき防止）
+  window.addEventListener('load', () => {
+    CONTENT.questions.forEach((q) => {
+      preload(q.base);
+      q.choices.forEach((c) => preload(c.image));
+    });
+    preload(CONTENT.backButton.image);
+  });
 
   els.startButton.addEventListener('click', () => {
     trackCount('diagnosisStart');
@@ -208,8 +261,9 @@
 
   els.backButton.addEventListener('click', onBack);
   els.modalClose.addEventListener('click', closeModal);
-  els.modalOverlay.addEventListener('click', (e) => {
-    if (e.target === els.modalOverlay) closeModal();
+  els.modalOverlay.addEventListener('click', onOverlayClick);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
   });
   els.noteLink.addEventListener('click', () => trackCount('noteClick'));
 })();
