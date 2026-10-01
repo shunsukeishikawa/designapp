@@ -43,7 +43,7 @@
   }
 
   async function showDiagnosisCount() {
-    if (!CONFIG.COUNTER_ENABLED) return;
+    if (!CONFIG.COUNTER_ENABLED || !CONFIG.SHOW_COUNT) return;
     const name = CONFIG.COUNTER_NAMES.diagnosisStart;
     if (!name) return;
     try {

@@ -5,7 +5,12 @@
  */
 
 const CONFIG = {
+  // カウントの送信（CounterAPIへの記録）を行うか
   COUNTER_ENABLED: true,
+  // トップ画面に「これまでの診断数」を表示するか（記録とは別に切り替え可能）
+  // 数値はCounterAPIのダッシュボードで確認できる
+  SHOW_COUNT: false,
+  COUNTER_WORKSPACE: 'design-jumper',
   COUNTER_WORKSPACE: 'design-jumper',
   // CounterAPI側のダッシュボードでカウンター名入力時に
   // slugが「入力名(ハイフン化)+元の名前」で二重生成される事象が発生したため、
