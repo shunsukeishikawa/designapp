@@ -78,10 +78,13 @@ html, body {
 }
 
 /* --r: 角丸の半径（ボタンSVGの書き出しで角丸が失われているものをCSSで補う） */
+/* --fill: ボタンの地色。SVGの縦横比と表示枠がわずかにずれると
+   左右に細い隙間ができ「ボタンの端が欠けて」見えるため、同じ色で下地を塗って隙間を埋める */
 .hotspot img {
   display: block;
   width: 100%;
   height: 100%;
+  background: var(--fill, transparent);
   border-radius: calc(var(--r, 0) * var(--u));
   pointer-events: none;
   transition: transform 0.12s ease;
@@ -114,7 +117,7 @@ html, body {
   -webkit-mask-image: linear-gradient(to bottom, #000 99.2%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 99.2%, transparent 100%);
 }
-#start-button { --x: 16; --y: 978; --w: 358; --h: 70; --r: 35; }
+#start-button { --x: 16; --y: 978; --w: 358; --h: 70; --r: 35; --fill: #000; }
 
 .diagnosis-count {
   position: absolute;
@@ -128,12 +131,12 @@ html, body {
 }
 
 /* 質問（選択肢は --i 番目ごとに134pxずつ下へ） */
-.choice { --x: 16; --y: calc(394 + var(--i) * 134); --w: 358; --h: 120; --r: 13; }
+.choice { --x: 16; --y: calc(394 + var(--i) * 134); --w: 358; --h: 120; --r: 13; --fill: #000; }
 #back-button { --x: 310; --y: 669; --w: 64; --h: 13; }
 
 /* 診断結果（他タイプのカードは --i 番目ごとに214pxずつ下へ） */
 .type-card { --x: 16; --y: calc(1583 + var(--i) * 214); --w: 358; --h: 200; --r: 12; }
-#note-link { --x: 16; --y: 2755; --w: 358; --h: 70; --r: 35; }
+#note-link { --x: 16; --y: 2755; --w: 358; --h: 70; --r: 35; --fill: #fff; }
 
 /* モーダル */
 #modal-close { --x: 299; --y: 39; --w: 52; --h: 17; --pad: 14; }
